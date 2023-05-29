@@ -1,4 +1,4 @@
-class OpenAiClient
+class OpenAi::Client
   MODEL = 'gpt-3.5-turbo'.freeze
   REQUEST_TIMEOUT = 240
   ROLE = 'user'.freeze
