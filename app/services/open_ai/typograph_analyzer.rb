@@ -1,26 +1,34 @@
-class OpenAi::TypographAnalyzer
-  # @return [String]
-  def instruction
-    <<~HEREDOC
-      Я занимаюсь анализом типографа. И хочу, чтобы ты помог оценить, какие конкретно изменения он вносит в текст.
-      Я пришлю тебе примеры исходного текста ("Source") и обработанного текста ("Result").
+module OpenAi
+  class TypographAnalyzer < Base
+    # @return [String]
+    def instruction
+      <<~HEREDOC
+        Я занимаюсь анализом типографа. И хочу, чтобы ты помог оценить, какие конкретно изменения он вносит в текст.
 
-      Твое задание: описать в пункт, что делает данный типограф, приводя примеры с цитатами из "Source" и "Result" для каждого из пунктов.
+        Я пришлю тебе исходный текст ("Source") и обработанный текст ("Result").
 
-      Пример ответа:
-      - заменяет обычные пробелов на неразрывные ("### Трамп — крупный девелопер" -> "<p>### Трамп&nbsp;&mdash; крупный девелопер</p>")
-    HEREDOC
-  end
+        Твое задание:
+        1) описать в пункт, что делает данный типограф
+        2) приведи примеры (цитируя фрагменты исходного и обработанного текста) для каждого из пунктов.
 
-  # @param input [Array<String>]
-  # @return [String]
-  def format_message(input)
-    <<~HEREDOC
-      Source:
-      #{input.first}
+        Поехали!
+      HEREDOC
+    end
 
-      Result:
-      #{input.last}
-    HEREDOC
+    # @param input [Array<String>]
+    # @return [String]
+    def format_message(input)
+      <<~HEREDOC
+        Source:
+        #{input.first}
+
+        Result:
+        #{input.last}
+      HEREDOC
+    end
+
+    def default_options
+      super.merge(temperature: 0.9)
+    end
   end
 end

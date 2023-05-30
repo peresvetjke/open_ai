@@ -19,8 +19,8 @@ task :analyze_typograph, %i[dir list postfix] => :environment do |_, args|
     result_file_name = result_file_path.split('/').last
     result = File.read(result_file_path)
 
-    analyzer = TypographAnalyzers::Base.new([source, result])
-    if analyzer.call
+    analyzer = OpenAi::TypographAnalyzer.new
+    if analyzer.call([[source, result]])
       $stdout.puts 'success for fragment :)'
       File.write(File.join(work_dir, result_file_name), analyzer.result)
     else

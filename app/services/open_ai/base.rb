@@ -1,58 +1,69 @@
-class OpenAi::TypographAnalyzer
-  def initialize
-    FileUtils.mkdir_p(File.dirname('tmp/logs/.'))
-  end
+module OpenAi
+  class Base
+    def initialize
+      FileUtils.mkdir_p(File.dirname('tmp/logs/.'))
+    end
 
-  # @param list_of_inputs [Array<Object>]
-  # @return [Boolean]
-  def call(list_of_inputs)
-    messages = prepare_messages(list_of_inputs)
-    request_open_ai(messages)
-    success?
-  end
+    # @param list_of_inputs [Array<Object>]
+    # @param opts [Hash]
+    # @return [Boolean]
+    def call(list_of_inputs, opts = {})
+      messages = prepare_messages(list_of_inputs)
+      get_response(messages, opts)
+      success?
+    end
 
-  # @return [String]
-  def result
-    @result['choices'].first['message']['content']
-  end
+    # @return [String]
+    def result
+      @result['choices'].first['message']['content']
+    end
 
-  # @return [String]
-  def errors
-    @result['error']['message']
-  end
+    # @return [String]
+    def errors
+      @result['error']['message']
+    end
 
-  private
+    private
 
-  # @return [Boolean]
-  def success?
-    !@result.key?('error')
-  end
+    # @return [String]
+    def instruction
+      raise NotImplemented
+    end
 
-  # @messages [Array<String>]
-  # @return [Hash]
-  def request_open_ai(messages)
-    @result = ::OpenAiClient.new([instruction] + messages).call
-  end
+    # @param list_of_inputs [Array<Object>]
+    # @return [Array<String>]
+    def prepare_messages(list_of_inputs)
+      list_of_inputs.map { |input| format_message(input) }
+    end
 
-  def options
+    # Adjust in sub-classes
+    # @param input [Object]
+    # @return [String]
+    def format_message(input)
+      input
+    end
 
-  end
+    # @param messages [Array<String>]
+    # @param opts [Hash]
+    # @return [Hash]
+    def get_response(messages, opts)
+      request = [instruction] + messages
+      options = default_options.merge(opts)
+      @result = Client.new(request).call(options)
+    end
 
-  # @return [String]
-  def instruction
-    raise NotImplemented
-  end
+    # @return [Hash]
+    def default_options
+      {
+        model: 'gpt-3.5-turbo',
+        role: 'user',
+        temperature: 0.7
+      }
+    end
 
-  # @param list_of_inputs [Array<Object>]
-  # @return [Array<String>]
-  def prepare_messages(list_of_inputs)
-    list_of_inputs.map { |input| format_message(input) }
-  end
-
-  # Adjust in sub-classes
-  # @param input [Object]
-  # @return [String]
-  def format_message(input)
-    input
+    # @return [Boolean]
+    def success?
+      !@result.key?('error')
+    end
   end
 end
